@@ -11,7 +11,7 @@
 	<groupId>it.erika.albanese</groupId>
 	<artifactId>itineraryplanner</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>itineraryplanner</name>
+	<name>itinerary-planner</name>
 	<description>Itinerary Planner</description>
 	<url/>
 	<licenses>
