@@ -1,7 +1,9 @@
 package it.erika.albanese.itineraryplanner.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,7 +14,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "ITINERARY_LEG")
-@Data
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 public class Leg {
 
@@ -33,6 +36,7 @@ public class Leg {
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
 
+    @JsonBackReference
     @ManyToMany(mappedBy = "legs")
     Set<Itinerary> itineraries;
 }

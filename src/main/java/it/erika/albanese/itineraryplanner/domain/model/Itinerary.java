@@ -1,19 +1,21 @@
 package it.erika.albanese.itineraryplanner.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "TRAVEL_ITINERARY")
-@Data
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 public class Itinerary {
 
@@ -34,11 +36,12 @@ public class Itinerary {
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
 
+    @JsonManagedReference
     @ManyToMany
     @JoinTable(
             name = "TRAVEL_ITINERARY_LEG",
-            joinColumns = @JoinColumn(name = "leg_id"),
-            inverseJoinColumns = @JoinColumn(name = "itinerary_id"))
-    Set<Leg> legs = new HashSet<>();
+            joinColumns = @JoinColumn(name = "itinerary_id"),
+            inverseJoinColumns = @JoinColumn(name = "leg_id"))
+    Set<Leg> legs;
 
 }
