@@ -4,6 +4,7 @@ import it.erika.albanese.itineraryplanner.assembler.ItineraryModelAssembler;
 import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
 import it.erika.albanese.itineraryplanner.exception.InvalidLegException;
+import it.erika.albanese.itineraryplanner.exception.MaximumItinerariesReachedException;
 import it.erika.albanese.itineraryplanner.service.ItineraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,11 +28,11 @@ public class ItineraryController {
 
     //1.Itinerary Creation Without Registration: Users can create travel itineraries without the need for registration.
     @PostMapping
-    public ResponseEntity<EntityModel<Itinerary>> createItinerary(@RequestBody CreateItineraryDto dto){
-        try{
+    public ResponseEntity<EntityModel<Itinerary>> createItinerary(@RequestBody CreateItineraryDto dto) {
+        try {
             Itinerary itinerary = itineraryService.createItinerary(dto);
             return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
-        } catch(InvalidLegException e) {
+        } catch (InvalidLegException | MaximumItinerariesReachedException e) {
             return ResponseEntity.badRequest().build();
         }
     }
