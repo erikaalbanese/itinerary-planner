@@ -16,10 +16,6 @@ public class LegService {
 
     final private LegRepository legRepository;
 
-    /*public Boolean existsById(UUID id) {
-        return legRepository.existsById(id);
-    }*/
-
     public Optional<Leg> findLegById(UUID id){
         return legRepository.findById(id);
     }

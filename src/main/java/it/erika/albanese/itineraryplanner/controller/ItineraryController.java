@@ -43,6 +43,7 @@ public class ItineraryController {
     }
 
     // 3.Itinerary Point Indication: Users can indicate where they are on the itinerary, for example by specifying the current stop or location.
+    // 5.Itinerary Modification: the user can modify the itinerary even while it is in progress.
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Itinerary>> editItinerary(@PathVariable UUID id, @RequestBody UpdateItineraryDto dto) {
         try {
