@@ -4,6 +4,8 @@ import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import it.erika.albanese.itineraryplanner.domain.model.Leg;
 import it.erika.albanese.itineraryplanner.domain.repository.ItineraryRepository;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
+import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
+import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
 import it.erika.albanese.itineraryplanner.exception.InvalidLegException;
 import it.erika.albanese.itineraryplanner.exception.MaximumItinerariesReachedException;
 import lombok.RequiredArgsConstructor;
@@ -11,40 +13,45 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ItineraryService {
 
+    private static final Long MAX_ITINERARIES = 10L;
     private final ItineraryRepository repository;
     private final LegService legService;
-    private static final Long MAX_ITINERARIES = 1L;
 
-    public Long countItineraries(){
+    public Long countItineraries() {
         return repository.count();
     }
 
-    public Itinerary createItinerary(CreateItineraryDto dto){
+    public Itinerary createItinerary(CreateItineraryDto dto) {
         Long itinerariesNumber = countItineraries();
 
-        if(itinerariesNumber < MAX_ITINERARIES) {
+        if (itinerariesNumber < MAX_ITINERARIES) {
             Itinerary itinerary = new Itinerary();
 
             itinerary.setPlace(dto.getPlace());
             itinerary.setEstimatedTime(dto.getEstimatedTime());
             itinerary.setCompleted(dto.isCompleted());
 
+            Set<Leg> legs = new HashSet<>();
+
             dto.getLegsIds().forEach(id -> {
                 Optional<Leg> legOptional = legService.findLegById(id);
                 if (legOptional.isPresent()) {
-                    Set<Leg> legs = itinerary.getLegs();
                     legs.add(legOptional.get());
                 } else {
                     throw new InvalidLegException("Leg Not Found");
                 }
             });
+
+            itinerary.setLegs(legs);
 
             return repository.save(itinerary);
         } else {
@@ -53,10 +60,38 @@ public class ItineraryService {
         }
     }
 
+    public Itinerary editItinerary(UUID id, UpdateItineraryDto dto) {
+        Optional<Itinerary> itineraryOptional = repository.findById(id);
+        if (itineraryOptional.isPresent()) {
+            Itinerary itinerary = itineraryOptional.get();
+
+            itinerary.setPlace(dto.getPlace());
+            itinerary.setEstimatedTime(dto.getEstimatedTime());
+            itinerary.setCompleted(dto.isCompleted());
+
+            Set<Leg> legs = new HashSet<>();
+
+            dto.getLegsIds().forEach(legId -> {
+                Optional<Leg> legOptional = legService.findLegById(legId);
+                if (legOptional.isPresent()) {
+                    legs.add(legOptional.get());
+                } else {
+                    throw new InvalidLegException("Leg Not Found");
+                }
+            });
+
+            itinerary.setLegs(legs);
+
+            return repository.save(itinerary);
+        } else {
+            throw new InvalidItineraryException("Itinerary Not Found");
+        }
+    }
+
     public Page<Itinerary> getItineraries(Boolean completed, Pageable pageable) {
-        if(completed != null ){
+        if (completed != null) {
             return repository.findByCompleted(completed, pageable);
-        }else {
+        } else {
             return repository.findAll(pageable);
         }
     }
