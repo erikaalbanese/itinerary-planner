@@ -2,6 +2,8 @@ package it.erika.albanese.itineraryplanner.controller;
 
 import it.erika.albanese.itineraryplanner.assembler.ItineraryModelAssembler;
 import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
+import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
+import it.erika.albanese.itineraryplanner.exception.InvalidLegException;
 import it.erika.albanese.itineraryplanner.service.ItineraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,17 @@ public class ItineraryController {
     private final ItineraryService itineraryService;
     private final ItineraryModelAssembler itineraryAssembler;
     private final PagedResourcesAssembler<Itinerary> itineraryPagedResourcesAssembler;
+
+    //1.Itinerary Creation Without Registration: Users can create travel itineraries without the need for registration.
+    @PostMapping
+    public ResponseEntity<EntityModel<Itinerary>> createItinerary(@RequestBody CreateItineraryDto dto){
+        try{
+            Itinerary itinerary = itineraryService.createItinerary(dto);
+            return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
+        } catch(InvalidLegException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     // 4.Itinerary Visualization: Users must be able to view which itineraries are currently being created and which are next in line to be processed, along with the estimated completion time.
     @GetMapping
