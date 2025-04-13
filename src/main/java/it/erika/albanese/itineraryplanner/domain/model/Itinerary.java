@@ -1,6 +1,7 @@
 package it.erika.albanese.itineraryplanner.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import it.erika.albanese.itineraryplanner.utils.ItineraryStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +28,8 @@ public class Itinerary {
 
     private LocalDateTime estimatedTime;
 
-    private boolean completed;
+    @Enumerated(EnumType.STRING)
+    private ItineraryStatus status;
 
     @CreatedDate
     @Column(updatable = false)

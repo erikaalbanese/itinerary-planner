@@ -8,6 +8,7 @@ import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
 import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
 import it.erika.albanese.itineraryplanner.exception.InvalidLegException;
 import it.erika.albanese.itineraryplanner.exception.MaximumItinerariesReachedException;
+import it.erika.albanese.itineraryplanner.utils.ItineraryStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,18 +39,23 @@ public class ItineraryService {
 
             itinerary.setPlace(dto.getPlace());
             itinerary.setEstimatedTime(dto.getEstimatedTime());
-            itinerary.setCompleted(dto.isCompleted());
 
             Set<Leg> legs = new HashSet<>();
 
-            dto.getLegsIds().forEach(id -> {
-                Optional<Leg> legOptional = legService.findLegById(id);
-                if (legOptional.isPresent()) {
-                    legs.add(legOptional.get());
-                } else {
-                    throw new InvalidLegException("Leg Not Found");
-                }
-            });
+            if(dto.getLegsIds() == null || dto.getLegsIds().isEmpty()){
+                itinerary.setStatus(ItineraryStatus.PENDING);
+            } else {
+                itinerary.setStatus(dto.getStatus());
+
+                dto.getLegsIds().forEach(id -> {
+                    Optional<Leg> legOptional = legService.findLegById(id);
+                    if (legOptional.isPresent()) {
+                        legs.add(legOptional.get());
+                    } else {
+                        throw new InvalidLegException("Leg Not Found");
+                    }
+                });
+            }
 
             itinerary.setLegs(legs);
 
@@ -67,7 +73,12 @@ public class ItineraryService {
 
             itinerary.setPlace(dto.getPlace());
             itinerary.setEstimatedTime(dto.getEstimatedTime());
-            itinerary.setCompleted(dto.isCompleted());
+
+            if(dto.getLegsIds() == null || dto.getLegsIds().isEmpty()){
+                itinerary.setStatus(ItineraryStatus.PENDING);
+            } else {
+                itinerary.setStatus(dto.getStatus());
+            }
 
             Set<Leg> legs = new HashSet<>();
 
@@ -88,9 +99,9 @@ public class ItineraryService {
         }
     }
 
-    public Page<Itinerary> getItineraries(Boolean completed, Pageable pageable) {
-        if (completed != null) {
-            return repository.findByCompleted(completed, pageable);
+    public Page<Itinerary> getItineraries(ItineraryStatus status, Pageable pageable) {
+        if (status != null) {
+            return repository.findByStatus(status, pageable);
         } else {
             return repository.findAll(pageable);
         }
