@@ -4,9 +4,6 @@ import it.erika.albanese.itineraryplanner.assembler.ItineraryModelAssembler;
 import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
 import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
-import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
-import it.erika.albanese.itineraryplanner.exception.InvalidLegException;
-import it.erika.albanese.itineraryplanner.exception.MaximumItinerariesReachedException;
 import it.erika.albanese.itineraryplanner.service.ItineraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,26 +31,16 @@ public class ItineraryController {
     //2.Itinerary Limitation: The system must ensure that no more itineraries are accepted than it can handle concurrently.
     @PostMapping
     public ResponseEntity<EntityModel<Itinerary>> createItinerary(@RequestBody CreateItineraryDto dto) {
-        try {
-            Itinerary itinerary = itineraryService.createItinerary(dto);
-            return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
-        } catch (InvalidLegException | MaximumItinerariesReachedException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Itinerary itinerary = itineraryService.createItinerary(dto);
+        return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
     }
 
     // 3.Itinerary Point Indication: Users can indicate where they are on the itinerary, for example by specifying the current stop or location.
     // 5.Itinerary Modification: the user can modify the itinerary even while it is in progress.
     @PutMapping("/{id}")
     public ResponseEntity<EntityModel<Itinerary>> editItinerary(@PathVariable UUID id, @RequestBody UpdateItineraryDto dto) {
-        try {
-            Itinerary itinerary = itineraryService.editItinerary(id, dto);
-            return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
-        } catch (InvalidLegException e1) {
-            return ResponseEntity.badRequest().build();
-        } catch (InvalidItineraryException e2) {
-            return ResponseEntity.notFound().build();
-        }
+        Itinerary itinerary = itineraryService.editItinerary(id, dto);
+        return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
     }
 
     // 4.Itinerary Visualization: Users must be able to view which itineraries are currently being created and which are next in line to be processed, along with the estimated completion time.
