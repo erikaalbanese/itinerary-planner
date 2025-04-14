@@ -1,5 +1,6 @@
 package it.erika.albanese.itineraryplanner.assembler;
 
+import it.erika.albanese.itineraryplanner.controller.ItineraryController;
 import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 
 @Component
 public class ItineraryModelAssembler implements RepresentationModelAssembler<Itinerary, EntityModel<Itinerary>> {
@@ -17,7 +21,14 @@ public class ItineraryModelAssembler implements RepresentationModelAssembler<Iti
 
     @Override
     public EntityModel<Itinerary> toModel(Itinerary entity) {
-        return EntityModel.of(entity);
+        return EntityModel.of(
+                entity,
+                linkTo(methodOn(ItineraryController.class).getItinerary(entity.getId())).withSelfRel(),
+                linkTo(methodOn(ItineraryController.class).getItineraries(null, "asc", 0, 10))
+                        .withSelfRel(),
+                linkTo(methodOn(ItineraryController.class).getItineraryLegs(entity.getId(),
+                        "asc", 0, 10)).withSelfRel()
+        );
     }
 
     @Override
