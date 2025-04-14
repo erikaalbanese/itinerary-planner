@@ -6,6 +6,7 @@ import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import it.erika.albanese.itineraryplanner.domain.model.Leg;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
 import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
+import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
 import it.erika.albanese.itineraryplanner.service.ItineraryService;
 import it.erika.albanese.itineraryplanner.service.LegService;
 import it.erika.albanese.itineraryplanner.utils.ItineraryStatus;
@@ -21,6 +22,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -69,6 +71,22 @@ public class ItineraryController {
         PagedModel<EntityModel<Itinerary>> pagedModel = itineraryPagedResourcesAssembler.toModel(itinerariesPage, itineraryAssembler);
 
         return ResponseEntity.ok(pagedModel);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EntityModel<Itinerary>>
+    getItinerary(@PathVariable UUID id) {
+        Optional<Itinerary> itineraryOptional = itineraryService.findItineraryById(id);
+
+        if(itineraryOptional.isPresent()){
+            Itinerary itinerary = itineraryOptional.get();
+
+            EntityModel<Itinerary> itineraryModel = itineraryAssembler.toModel(itinerary);
+
+            return ResponseEntity.ok(itineraryModel);
+        } else {
+            throw new InvalidItineraryException("Itinerary not found");
+        }
     }
 
     @GetMapping("/{id}/legs")

@@ -55,7 +55,8 @@ public class ItineraryService {
                 dto.getLegsIds().forEach(id -> {
                     Optional<Leg> legOptional = legRepository.findById(id);
                     if (legOptional.isPresent()) {
-                        legs.add(legOptional.get());
+                        Leg leg = legOptional.get();
+                        legs.add(leg);
                     } else {
                         throw new InvalidLegException("Leg Not Found");
                     }
@@ -79,22 +80,23 @@ public class ItineraryService {
             itinerary.setPlace(dto.getPlace());
             itinerary.setEstimatedTime(dto.getEstimatedTime());
 
+            Set<Leg> legs = new HashSet<>();
+
             if(dto.getLegsIds() == null || dto.getLegsIds().isEmpty()){
                 itinerary.setStatus(ItineraryStatus.PENDING);
             } else {
                 itinerary.setStatus(dto.getStatus());
+
+                dto.getLegsIds().forEach(legId -> {
+                    Optional<Leg> legOptional = legRepository.findById(legId);
+                    if (legOptional.isPresent()) {
+                        Leg leg = legOptional.get();
+                        legs.add(leg);
+                    } else {
+                        throw new InvalidLegException("Leg Not Found");
+                    }
+                });
             }
-
-            Set<Leg> legs = new HashSet<>();
-
-            dto.getLegsIds().forEach(legId -> {
-                Optional<Leg> legOptional = legRepository.findById(legId);
-                if (legOptional.isPresent()) {
-                    legs.add(legOptional.get());
-                } else {
-                    throw new InvalidLegException("Leg Not Found");
-                }
-            });
 
             itinerary.setLegs(legs);
 
@@ -110,6 +112,10 @@ public class ItineraryService {
         } else {
             return repository.findAll(pageable);
         }
+    }
+
+    public Optional<Itinerary> findItineraryById(UUID id) {
+        return repository.findById(id);
     }
 }
 
