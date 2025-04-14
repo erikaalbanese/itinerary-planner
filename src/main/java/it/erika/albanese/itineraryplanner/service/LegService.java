@@ -1,7 +1,9 @@
 package it.erika.albanese.itineraryplanner.service;
 
 import it.erika.albanese.itineraryplanner.domain.model.Leg;
+import it.erika.albanese.itineraryplanner.domain.repository.ItineraryRepository;
 import it.erika.albanese.itineraryplanner.domain.repository.LegRepository;
+import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class LegService {
 
     final private LegRepository legRepository;
+    final private ItineraryRepository itineraryRepository;
 
     public Optional<Leg> findLegById(UUID id){
         return legRepository.findById(id);
@@ -22,6 +25,15 @@ public class LegService {
 
     public Page<Leg> getAllLegsPaginated(Pageable pageable) {
         return legRepository.findAll(pageable);
+    }
+
+    public Page<Leg> findByItineraryId(UUID itineraryId, Pageable pageable){
+        if(itineraryRepository.existsById(itineraryId)){
+            return legRepository.findByItineraries_Id(itineraryId, pageable);
+        } else{
+            throw new InvalidItineraryException("Itinerary not found");
+        }
+
     }
 
 }

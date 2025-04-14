@@ -3,6 +3,7 @@ package it.erika.albanese.itineraryplanner.service;
 import it.erika.albanese.itineraryplanner.domain.model.Itinerary;
 import it.erika.albanese.itineraryplanner.domain.model.Leg;
 import it.erika.albanese.itineraryplanner.domain.repository.ItineraryRepository;
+import it.erika.albanese.itineraryplanner.domain.repository.LegRepository;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
 import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
 import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
@@ -25,10 +26,14 @@ public class ItineraryService {
 
     private static final Long MAX_ITINERARIES = 10L;
     private final ItineraryRepository repository;
-    private final LegService legService;
+    private final LegRepository legRepository;
 
     public Long countItineraries() {
         return repository.count();
+    }
+
+    public boolean existsById(UUID id){
+        return repository.existsById(id);
     }
 
     public Itinerary createItinerary(CreateItineraryDto dto) {
@@ -48,7 +53,7 @@ public class ItineraryService {
                 itinerary.setStatus(dto.getStatus());
 
                 dto.getLegsIds().forEach(id -> {
-                    Optional<Leg> legOptional = legService.findLegById(id);
+                    Optional<Leg> legOptional = legRepository.findById(id);
                     if (legOptional.isPresent()) {
                         legs.add(legOptional.get());
                     } else {
@@ -83,7 +88,7 @@ public class ItineraryService {
             Set<Leg> legs = new HashSet<>();
 
             dto.getLegsIds().forEach(legId -> {
-                Optional<Leg> legOptional = legService.findLegById(legId);
+                Optional<Leg> legOptional = legRepository.findById(legId);
                 if (legOptional.isPresent()) {
                     legs.add(legOptional.get());
                 } else {
