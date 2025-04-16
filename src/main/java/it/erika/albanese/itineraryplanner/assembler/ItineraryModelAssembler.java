@@ -25,9 +25,9 @@ public class ItineraryModelAssembler implements RepresentationModelAssembler<Iti
                 entity,
                 linkTo(methodOn(ItineraryController.class).getItinerary(entity.getId())).withSelfRel(),
                 linkTo(methodOn(ItineraryController.class).getItineraries(null, "asc", 0, 10))
-                        .withSelfRel(),
+                        .withRel("itineraries"),
                 linkTo(methodOn(ItineraryController.class).getItineraryLegs(entity.getId(),
-                        "asc", 0, 10)).withSelfRel()
+                        "asc", 0, 10)).withRel("legs")
         );
     }
 
