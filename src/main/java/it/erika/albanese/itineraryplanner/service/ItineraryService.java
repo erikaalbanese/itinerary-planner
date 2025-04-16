@@ -20,11 +20,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static it.erika.albanese.itineraryplanner.utils.ErrorMessages.*;
+
 @Service
 @RequiredArgsConstructor
 public class ItineraryService {
 
-    private static final Long MAX_ITINERARIES = 10L;
+    public static final Long MAX_ITINERARIES = 50L;
     private final ItineraryRepository repository;
     private final LegRepository legRepository;
 
@@ -58,7 +60,7 @@ public class ItineraryService {
                         Leg leg = legOptional.get();
                         legs.add(leg);
                     } else {
-                        throw new InvalidLegException("Leg Not Found");
+                        throw new InvalidLegException(LEG_NOT_FOUND);
                     }
                 });
             }
@@ -67,8 +69,7 @@ public class ItineraryService {
 
             return repository.save(itinerary);
         } else {
-            throw new MaximumItinerariesReachedException(
-                    "You can't create more than " + MAX_ITINERARIES + " itineraries");
+            throw new MaximumItinerariesReachedException(MAXIMUM_ITINERARIES);
         }
     }
 
@@ -93,7 +94,7 @@ public class ItineraryService {
                         Leg leg = legOptional.get();
                         legs.add(leg);
                     } else {
-                        throw new InvalidLegException("Leg Not Found");
+                        throw new InvalidLegException(LEG_NOT_FOUND);
                     }
                 });
             }
@@ -102,7 +103,7 @@ public class ItineraryService {
 
             return repository.save(itinerary);
         } else {
-            throw new InvalidItineraryException("Itinerary Not Found");
+            throw new InvalidItineraryException(ITINERARY_NOT_FOUND);
         }
     }
 

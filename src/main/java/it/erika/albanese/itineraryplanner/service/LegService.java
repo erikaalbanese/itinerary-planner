@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+import static it.erika.albanese.itineraryplanner.utils.ErrorMessages.ITINERARY_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class LegService {
@@ -31,7 +33,7 @@ public class LegService {
         if(itineraryRepository.existsById(itineraryId)){
             return legRepository.findByItineraries_Id(itineraryId, pageable);
         } else{
-            throw new InvalidItineraryException("Itinerary not found");
+            throw new InvalidItineraryException(ITINERARY_NOT_FOUND);
         }
 
     }

@@ -7,6 +7,7 @@ import it.erika.albanese.itineraryplanner.domain.model.Leg;
 import it.erika.albanese.itineraryplanner.dto.CreateItineraryDto;
 import it.erika.albanese.itineraryplanner.dto.UpdateItineraryDto;
 import it.erika.albanese.itineraryplanner.exception.InvalidItineraryException;
+import it.erika.albanese.itineraryplanner.exception.InvalidSortException;
 import it.erika.albanese.itineraryplanner.service.ItineraryService;
 import it.erika.albanese.itineraryplanner.service.LegService;
 import it.erika.albanese.itineraryplanner.utils.ItineraryStatus;
@@ -21,9 +22,14 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
+
+import static it.erika.albanese.itineraryplanner.utils.ErrorMessages.INVALID_SORT;
+import static it.erika.albanese.itineraryplanner.utils.ErrorMessages.ITINERARY_NOT_FOUND;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,68 +48,84 @@ public class ItineraryController {
     @PostMapping
     public ResponseEntity<EntityModel<Itinerary>> createItinerary(@Valid @RequestBody CreateItineraryDto dto) {
         Itinerary itinerary = itineraryService.createItinerary(dto);
-        return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(itinerary.getId())
+                .toUri();
+
+        // Returns 201 creates instead of 200 OK
+        return ResponseEntity.created(location).body(itineraryAssembler.toModel(itinerary));
     }
 
     // 3.Itinerary Point Indication: Users can indicate where they are on the itinerary, for example by specifying the current leg or place.
     // 5.Itinerary Modification: the user can modify the itinerary even while it is in progress.
     @PutMapping("/{id}")
-    public ResponseEntity<EntityModel<Itinerary>> editItinerary(@PathVariable UUID id, @Valid @RequestBody UpdateItineraryDto dto) {
+    public EntityModel<Itinerary> editItinerary(@PathVariable UUID id, @Valid @RequestBody UpdateItineraryDto dto) {
         Itinerary itinerary = itineraryService.editItinerary(id, dto);
-        return ResponseEntity.ok(itineraryAssembler.toModel(itinerary));
+        return itineraryAssembler.toModel(itinerary);
     }
 
-    // 4.Itinerary Visualization: Users must be able to view which itineraries are currently being created and which are next in line to be processed, along with the estimated completion time.
+    // 4.Itinerary Visualization: Users must be able to view which itineraries are currently being created
+    // and which are next in line to be processed, along with the estimated completion time.
     @GetMapping
-    public ResponseEntity<PagedModel<EntityModel<Itinerary>>>
+    public PagedModel<EntityModel<Itinerary>>
     getItineraries(@RequestParam(required = false) ItineraryStatus status,
                    @RequestParam(required = false, defaultValue = "asc") String sort,
                    @RequestParam(defaultValue = "0") int page,
                    @RequestParam(defaultValue = "10") int size) {
 
-        Sort sorting = sort.equalsIgnoreCase("asc") ? Sort.by("estimatedTime").ascending() :
-                Sort.by("estimatedTime").descending();
+        Sort sorting;
+        if("asc".equalsIgnoreCase(sort)){
+            sorting = Sort.by("estimatedTime").ascending();
+        } else if("desc".equalsIgnoreCase(sort)){
+            sorting = Sort.by("estimatedTime").descending();
+        } else {
+            throw new InvalidSortException(INVALID_SORT);
+        }
 
         Pageable pageable = PageRequest.of(page, size, sorting);
 
         Page<Itinerary> itinerariesPage = itineraryService.getItineraries(status, pageable);
 
-        PagedModel<EntityModel<Itinerary>> pagedModel = itineraryPagedResourcesAssembler.toModel(itinerariesPage, itineraryAssembler);
-
-        return ResponseEntity.ok(pagedModel);
+        return itineraryPagedResourcesAssembler.toModel(itinerariesPage, itineraryAssembler);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityModel<Itinerary>>
+    public EntityModel<Itinerary>
     getItinerary(@PathVariable UUID id) {
         Optional<Itinerary> itineraryOptional = itineraryService.findItineraryById(id);
 
-        if(itineraryOptional.isPresent()){
+        if (itineraryOptional.isPresent()) {
             Itinerary itinerary = itineraryOptional.get();
 
-            EntityModel<Itinerary> itineraryModel = itineraryAssembler.toModel(itinerary);
-
-            return ResponseEntity.ok(itineraryModel);
+            return itineraryAssembler.toModel(itinerary);
         } else {
-            throw new InvalidItineraryException("Itinerary not found");
+            throw new InvalidItineraryException(ITINERARY_NOT_FOUND);
         }
     }
 
     @GetMapping("/{id}/legs")
-    public ResponseEntity<PagedModel<EntityModel<Leg>>>
+    public PagedModel<EntityModel<Leg>>
     getItineraryLegs(@PathVariable UUID id,
-                   @RequestParam(required = false, defaultValue = "asc") String sort,
-                   @RequestParam(defaultValue = "0") int page,
-                   @RequestParam(defaultValue = "10") int size) {
-        Sort sorting = sort.equalsIgnoreCase("asc") ? Sort.by("name").ascending() :
-                Sort.by("name").descending();
+                     @RequestParam(required = false, defaultValue = "asc") String sort,
+                     @RequestParam(defaultValue = "0") int page,
+                     @RequestParam(defaultValue = "10") int size) {
+
+        Sort sorting;
+        if("asc".equalsIgnoreCase(sort)){
+            sorting = Sort.by("estimatedTime").ascending();
+        } else if("desc".equalsIgnoreCase(sort)){
+            sorting = Sort.by("estimatedTime").descending();
+        } else {
+            throw new InvalidSortException(INVALID_SORT);
+        }
 
         Pageable pageable = PageRequest.of(page, size, sorting);
         Page<Leg> legsPage = legService.findByItineraryId(id, pageable);
 
-        PagedModel<EntityModel<Leg>> pagedModel = legPagedResourcesAssembler.toModel(legsPage, legAssembler);
-
-        return ResponseEntity.ok(pagedModel);
+        return legPagedResourcesAssembler.toModel(legsPage, legAssembler);
     }
 }
 
