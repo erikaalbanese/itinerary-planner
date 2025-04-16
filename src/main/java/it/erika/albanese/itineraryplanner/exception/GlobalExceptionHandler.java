@@ -38,10 +38,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDTO> handleException(InvalidItineraryException ex) {
+    public ResponseEntity<ErrorDTO> handleException(Exception ex) {
         ErrorDTO errorDTO = ErrorDTO.builder().timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value()).error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .trace(Arrays.toString(ex.getStackTrace())).message("Itinerary not found").path("").build();
+                .trace(Arrays.toString(ex.getStackTrace())).message("").path("").build();
 
         return new ResponseEntity<>(errorDTO, HttpStatus.INTERNAL_SERVER_ERROR);
     }
