@@ -11,6 +11,7 @@ import java.util.UUID;
 @Repository
 public interface LegRepository extends JpaRepository<Leg, UUID> {
 
+    //Derived Query Methods in Spring Data JPA Repositories
     Page<Leg> findByItineraries_Id(UUID itineraryId, Pageable pageable);
 
 }

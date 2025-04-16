@@ -12,6 +12,7 @@ import static it.erika.albanese.itineraryplanner.utils.ErrorMessages.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(InvalidItineraryException.class)
     public ResponseEntity<ErrorDTO> handleInvalidItineraryException(InvalidItineraryException ex) {
         ErrorDTO errorDTO = ErrorDTO.builder().timestamp(LocalDateTime.now())
